@@ -179,7 +179,7 @@ async function handleGetRecentChat(args: Record<string, unknown>) {
     }
     return { content: [{ type: "text", text: raw }], structuredContent: JSON.parse(raw) };
   } catch (err) {
-    return { content: [{ type: "text", text: "no recent chats" }] };
+    return { content: [{ type: "text", text: "no recent chats" }], structuredContent: {} };
   }
 }
 
