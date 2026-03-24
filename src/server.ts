@@ -68,7 +68,8 @@ async function handleInbound(msg: Message): Promise<void> {
       );
     }),
     withLock({ file: MESSAGES_FILE, timeout: 5000 }, (file) => {
-      if (!tryRead(file)?.includes(msg.id)) {
+      const existing = tryRead(file);
+      if (!existing || !existing.includes(msg.id)) {
         appendFileSync(file, JSON.stringify(entry) + "\n");
       }
     }),

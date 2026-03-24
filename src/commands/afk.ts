@@ -43,13 +43,17 @@ export async function listenOnce(timeout?: number): Promise<string | null> {
       process.exit(0);
     }
 
-    await withLock({ file: MESSAGES_FILE, timeout: 5000 }, (file) => {
+    const raw = await withLock({ file: MESSAGES_FILE, timeout: 5000 }, (file) => {
       const raw = tryRead(file);
       if (raw) {
         unlinkSync(file);
       }
       return raw;
     });
+
+    if (raw) {
+      return raw.trim();
+    }
 
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
   }
