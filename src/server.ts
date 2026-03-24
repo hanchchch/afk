@@ -9,7 +9,7 @@
 
 import { appendFileSync, writeFileSync } from "fs";
 import type { Message } from "discord.js";
-import { MESSAGES_FILE, RECENT_CHATS_FILE } from "./config.js";
+import { getConfig, MESSAGES_FILE, RECENT_CHATS_FILE } from "./config.js";
 import { gate } from "./access.js";
 import { discord, startApprovalPolling } from "./discord.js";
 import { connectMcp } from "./mcp.js";
@@ -80,9 +80,13 @@ async function handleInbound(msg: Message): Promise<void> {
   }
 }
 
-// ─── Connect MCP ────────────────────────────────────────────────────────────
-
 export async function startServer(): Promise<void> {
+  discord.login(getConfig().discord_bot_token).catch((err) => {
+    process.stderr.write(`login failed: ${err}\n`);
+    process.exit(1);
+  });
+
+  // ─── Connect MCP ────────────────────────────────────────────────────────────
   await connectMcp();
 
   // ─── Shutdown handling ──────────────────────────────────────────────────────

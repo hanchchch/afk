@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 import { APPROVED_DIR, CONFIG_FILE, getConfig, MESSAGES_FILE, STATE_DIR } from "../config.js";
 import { loadAccess, pruneExpired, saveAccess } from "../access.js";
 import { tryRead, withLock } from "../files.js";
-import { fetchAllowedChannel } from "../discord.js";
+import { discord, fetchAllowedChannel } from "../discord.js";
 import { startServer } from "../server.js";
 
 function toggleStatus(explicit?: string): void {
@@ -282,6 +282,11 @@ yargs(hideBin(process.argv))
       }),
     async (argv) => {
       try {
+        discord.login(getConfig().discord_bot_token).catch((err) => {
+          process.stderr.write(`login failed: ${err}\n`);
+          process.exit(1);
+        });
+
         let message = await listenOnce();
         if (!message) {
           process.exit(0);

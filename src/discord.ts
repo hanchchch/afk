@@ -16,11 +16,6 @@ export const discord = new Client({
   partials: [Partials.Channel],
 });
 
-discord.login(getConfig().discord_bot_token).catch((err) => {
-  process.stderr.write(`login failed: ${err}\n`);
-  process.exit(1);
-});
-
 // ─── Approval polling ───────────────────────────────────────────────────────
 
 export function startApprovalPolling(): void {
