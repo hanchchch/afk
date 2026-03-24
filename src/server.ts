@@ -23,7 +23,7 @@ async function handleInbound(msg: Message): Promise<void> {
   if (result.action === "pair") {
     const lead = result.isResend ? "Still pending" : "Pairing required";
     try {
-      await msg.reply(`${lead} — run in your terminal:\n\n\`pnpm afk pair ${result.code}\``);
+      await msg.reply(`${lead} — run in your terminal:\n\n\`afk pair ${result.code}\``);
     } catch (err) {
       process.stderr.write(`failed to send pairing code: ${err}\n`);
     }
