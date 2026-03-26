@@ -34,7 +34,9 @@ function toggleStatus(explicit?: string): void {
 
 const POLL_INTERVAL_MS = 500;
 
-export async function listenOnce(timeout?: number): Promise<string | null> {
+export async function listenOnce(
+  timeout?: number,
+): Promise<{ content: string; chat_id: string; message_id: string; user: string; user_id: string; ts: string }[]> {
   const startTime = Date.now();
   while (timeout === undefined || Date.now() - startTime < timeout) {
     const afkStatus = readAfkStatus();
@@ -52,12 +54,16 @@ export async function listenOnce(timeout?: number): Promise<string | null> {
     });
 
     if (raw) {
-      return raw.trim();
+      return raw
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => JSON.parse(line));
     }
 
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
   }
-  return null;
+  return [];
 }
 
 function pair(code: string): void {
@@ -291,26 +297,30 @@ yargs(hideBin(process.argv))
           process.exit(1);
         });
 
-        let message = await listenOnce();
-        if (!message) {
+        const messages = await listenOnce();
+        if (messages.length === 0) {
           process.exit(0);
         }
 
         if (argv.hookMode) {
-          const parsed = JSON.parse(message);
-          const chatId = parsed.chat_id;
+          const content = messages.map((message) => message.content).join("\n\n");
+          const lastMessage = messages[messages.length - 1];
+          const chatId = lastMessage.chat_id;
           const ch = await fetchAllowedChannel(chatId);
           await ch.sendTyping();
           const followupMessage = {
             followup_message:
-              `${parsed.content}\n\n` +
+              `${content}\n\n` +
               `use the mcp tool "reply" to reply to the user. ` +
               `reply once you're done. if you think it would take some time to get it done, tell the user that you'll get back to them soon, with your brief thought and rough estimate of how long it will take. ` +
-              `chat_id: ${chatId}, message_id: ${parsed.message_id}, user_id: ${parsed.user_id}, user: ${parsed.user}`,
+              `chat_id: ${chatId}, message_id: ${lastMessage.message_id}, user_id: ${lastMessage.user_id}, user: ${lastMessage.user}`,
           };
-          message = JSON.stringify(followupMessage);
+          process.stdout.write(JSON.stringify(followupMessage) + "\n");
+        } else {
+          for (const message of messages) {
+            process.stdout.write(JSON.stringify(message) + "\n");
+          }
         }
-        process.stdout.write(message + "\n");
         process.exit(0);
       } catch (error) {
         process.stderr.write(`failed to listen once: ${error}\n`);
