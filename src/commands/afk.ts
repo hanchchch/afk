@@ -304,7 +304,8 @@ yargs(hideBin(process.argv))
           const followupMessage = {
             followup_message:
               `${parsed.content}\n\n` +
-              `reply using mcp tool "reply" when you're done. ` +
+              `use the mcp tool "reply" to reply to the user. ` +
+              `reply once you're done. if you think it would take some time to get it done, tell the user that you'll get back to them soon, with your brief thought and rough estimate of how long it will take. ` +
               `chat_id: ${chatId}, message_id: ${parsed.message_id}, user_id: ${parsed.user_id}, user: ${parsed.user}`,
           };
           message = JSON.stringify(followupMessage);
